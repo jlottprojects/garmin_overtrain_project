@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: garmin_raw
+    database: GARMIN_PROJECT
+    schema: RAW
+    description: "Raw landing zone for unified daily Garmin Connect API extractions."
+    
+    tables:
+      - name: src_garmin_overtrain_metrics
+        description: "The primary ingestion table containing unified daily JSON blobs with metadata and multi-endpoint data payloads."
