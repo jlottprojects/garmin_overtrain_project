@@ -13,6 +13,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 load_dotenv()
+
 GARMIN_EMAIL = os.getenv("GARMIN_EMAIL")
 GARMIN_PASSWORD = os.getenv("GARMIN_PASSWORD")
 GCS_BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
@@ -129,24 +130,21 @@ def run_pipeline(target_date):
     logger.info(f"--- Pipeline successfully completed for Date: {date_str} ---")
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Garmin Data Pipeline Extract & Load")
-    parser.add_argument(
-        "--start_date", type=str, help="Backfill start date (YYYY-MM-DD)"
-    )
-    parser.add_argument("--end_date", type=str, help="Backfill end date (YYYY-MM-DD)")
-    args = parser.parse_args()
-
-    if args.start_date:
-        start = datetime.strptime(args.start_date, "%Y-%m-%d")
+def main(start_date=None, end_date=None):
+    """
+    Main entry point for both standalone execution and orchestrator imports.
+    If called without arguments, defaults to pulling yesterday's metrics (standard pipeline run).
+    """
+    if start_date:
+        start = datetime.strptime(start_date, "%Y-%m-%d")
         end = (
-            datetime.strptime(args.end_date, "%Y-%m-%d")
-            if args.end_date
+            datetime.strptime(end_date, "%Y-%m-%d")
+            if end_date
             else (datetime.today() - timedelta(days=1))
         )
 
         logger.info(
-            f"Running in BACKFILL MODE from {args.start_date} to {end.strftime('%Y-%m-%d')}"
+            f"Running in BACKFILL MODE from {start_date} to {end.strftime('%Y-%m-%d')}"
         )
 
         current_date = start
@@ -161,5 +159,19 @@ if __name__ == "__main__":
             current_date += timedelta(days=1)
 
     else:
+        # Default daily automation behavior
         yesterday = datetime.today() - timedelta(days=1)
         run_pipeline(yesterday)
+
+
+if __name__ == "__main__":
+    # This block handles parsing CLI flags when running the file directly
+    parser = argparse.ArgumentParser(description="Garmin Data Pipeline Extract & Load")
+    parser.add_argument(
+        "--start_date", type=str, help="Backfill start date (YYYY-MM-DD)"
+    )
+    parser.add_argument("--end_date", type=str, help="Backfill end date (YYYY-MM-DD)")
+    args = parser.parse_args()
+
+    # Pass the parsed CLI args into our main function
+    main(start_date=args.start_date, end_date=args.end_date)
