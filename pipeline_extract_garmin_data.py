@@ -6,7 +6,7 @@ from cryptography.hazmat.primitives import serialization
 from dotenv import load_dotenv
 from prefect import flow, task
 from prefect_dbt.cli.commands import trigger_dbt_cli_command
-from prefect.client.schedules import CronSchedule
+from prefect.schedules import Cron
 
 
 from extract_garmin import main as run_garmin_extraction
@@ -119,8 +119,8 @@ if __name__ == "__main__":
     # This turns your script into a managed worker with an automated cron schedule
     health_metrics_orchestration_flow.serve(
         name="daily-garmin-sync",
-        schedule=CronSchedule(
-            cron="0 8 * * *",  # Runs every single day at 5:00 AM
+        schedule=Cron(
+            "0 8 * * *",  # Runs every single day at 8:00 AM
             timezone="America/Detroit",
         ),
     )
